@@ -1,4 +1,22 @@
 (() => {
+    // Ana sayfa kontrolü yptım.
+    const isHomePage = () => {
+        const currentUrl = window.location.href.toLowerCase();
+        const homePageUrls = [
+            'https://www.e-bebek.com/',
+            'https://www.e-bebek.com',
+            'https://e-bebek.com/',
+            'https://e-bebek.com'
+        ];
+        
+        return homePageUrls.some(url => currentUrl === url);
+    };
+
+
+    if (!isHomePage()) {
+        console.log('wrong page');
+        return;
+    }
 
     API_URL = "https://gist.githubusercontent.com/sevindi/8bcbde9f02c1d4abe112809c974e1f49/raw/9bf93b58df623a9b16f1db721cd0a7a539296cf0/products.json",
     JQUERY_URL  = "https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js",
@@ -6,8 +24,6 @@
         PRODUCTS: "ebebek_products",
         FAVORITES: "ebebek_favorites"
     }
-
-
 
     const init = () => {
         buildHTML();
@@ -21,17 +37,18 @@
                 <div class="carousel-title">
                     <p>Beğenebileceğinizi düşündüklerimiz</p>
                 </div>
-                <div class="prev-button">&lt;</div>
-                <div class="next-button">&gt;</div>
+                <div class="carousel-prev-button">&lt;</div>
+                <div class="carousel-next-button">&gt;</div>
                 <div class="carousel-container">
                     <div class="carousel">
-                        <!-- Products will be rendered here -->
+                        
                     </div>
                 </div>
             </div>
         `;
 
-        $('body').append(html);
+        //anasayfada stories kısmını görememdim banner altına ekledim
+        $('cx-page-slot[position="Section1"]').after(html);
     };
 
     const buildCSS = () => {
@@ -45,7 +62,7 @@
                 
             .container {
                 max-width: 1200px;
-                margin: 30px auto;
+                margin: 20px auto;
                 position: relative;
                 background-color: #FFFFFF;
                 padding: 0;
@@ -240,6 +257,10 @@
                 color: #7d7d7d;
                 display: block;
                 }
+
+                .product-price.discounted {
+                    color: rgb(50, 182, 6);
+                }
                 
                 .installment-text {
                 font-size: 12px;
@@ -266,7 +287,7 @@
                 color: white;
                 }
                 
-                .prev-button, .next-button {
+                .carousel-prev-button, .carousel-next-button {
                     position: absolute;
                     top: 50%;
                     transform: translateY(-50%);
@@ -285,18 +306,18 @@
                     box-shadow: 0 2px 5px rgba(0,0,0,0.1);
                 }
 
-                .prev-button:hover, .next-button:hover {
+                .carousel-prev-button:hover, .carousel-next-button:hover {
                     background-color: white;
                     border: 2px solid orange;
                 }
 
-                .prev-button {
+                .carousel-prev-button {
                     left: -60px;
                 }
                 
-                .next-button {
+                .carousel-next-button {
                     right: -60px;
-                }
+            }
         `;
 
         $('<style>').addClass('carousel-style').html(css).appendTo('head');
@@ -342,9 +363,10 @@
         products.forEach((product) => {
           const isFavorite = favorites.includes(product.id);
           
+          //indirimli fiyat için kontrol yaptım.
           let discountHtml = '';
           let originalPriceHtml = '';
-          if (product.price !== product.original_price) {
+            if (product.price < product.original_price) {
             const discount = Math.round(((product.original_price - product.price) / product.original_price) * 100);
             discountHtml = `<span class="product-discount">%${discount}</span>`;
             originalPriceHtml = `<div class="product-original-price">${product.original_price.toFixed(2)} TL</div>`;
@@ -369,7 +391,7 @@
                                 <div class="original-price">
                                 ${originalPriceHtml} ${discountHtml}
                                 </div>
-                                <div class="product-price">
+                                <div class="product-price ${product.price < product.original_price ? 'discounted' : ''}">
                                     ${product.price.toFixed(2)} TL 
                                 </div>
                             </div>
@@ -377,7 +399,7 @@
                                 <div class="installment-text">${product.installment}</div>
                             ` : ''}
                             <button class="add-to-cart-btn">Sepete Ekle</button>
-                        </div>
+                    </div>
                 </div>
             </div>
           `;
@@ -461,8 +483,8 @@
             e.stopPropagation(); // sepete ekle butonuna tıklandığında carda tıklanmamamsı için
         });
         
-        $(".next-button").click(() => navigateCarousel('next'));
-        $(".prev-button").click(() => navigateCarousel('prev'));
+        $(".carousel-next-button").click(() => navigateCarousel('next'));
+        $(".carousel-prev-button").click(() => navigateCarousel('prev'));
 
         $(window).resize(() => {
             setTimeout(setupCarousel, 100);
